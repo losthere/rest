@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+                http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+				http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
+				 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd  
+				  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+                http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+                http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+                http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd"   
+    default-autowire="byName">
+
+	<context:component-scan base-package="com.optum.hedis" />
+	<context:component-scan base-package="com.optum.hedis.controller" />
+	<context:component-scan base-package="com.optum.databind" />
+	<context:component-scan base-package="com.optum.domain" />
+	<context:component-scan base-package="com.optum.hedis.filter" />
+	<context:component-scan base-package="com.optum.hedis.repository" />
+	<context:component-scan base-package="com.optum.hedis.service" />
+	<context:component-scan base-package="com.optum.hedis.util" />
+	<aop:aspectj-autoproxy expose-proxy="true" />
+
+	<jpa:repositories base-package="com.optum.hedis.repository" />
+
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<beans:bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<beans:property name="objectMapper">
+					<beans:bean class="com.optum.hedis.databind.HibernateAwareObjectMapper" />
+				</beans:property>
+			</beans:bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<context:annotation-config />
+	<tx:annotation-driven />
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan">
+			<array>
+				<value>com.optum.hedis.domain</value>
+			</array>
+		</property>
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</property>
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.exclude-unlisted-classes">true</prop>
+				<prop key="hibernate.archive.autodetection">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe" />
+		<property name="username" value="SR" />
+		<property name="password" value="rathaur" />
+	</bean>
+	
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="mailo2.uhc.com" />
+		<property name="port" value="25" />
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="persistenceExceptionTranslationPostProcessor"
+		class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	<bean
+		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" />
+</beans>
